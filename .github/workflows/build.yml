@@ -1,0 +1,56 @@
+name: Build apps
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+  android-apk:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --no-install
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: escape-android-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+
+  # iOS binaries must be signed with an Apple Developer account.
+  # Add an EXPO_TOKEN repository secret (expo.dev → Access tokens) and run `npx eas-cli credentials` once.
+  ios-eas:
+    needs: checks
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Build iOS (internal distribution) on EAS
+        if: ${{ env.EXPO_TOKEN != '' }}
+        run: npx eas-cli@latest build --platform ios --profile preview --non-interactive --no-wait
