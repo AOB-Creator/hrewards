@@ -72,7 +72,7 @@ describe('MockApi', () => {
     expect((await api.loyalty(token)).balance).toBe(before - 100);
     await expect(api.createHold(rate.roomTypeId, checkIn, checkOut, 1)).rejects.toMatchObject({ code: 'sold_out' });
 
-    const cancelled = await api.cancelBooking(b.id, token);
+    const cancelled = await api.cancelBooking(b.id);
     expect(cancelled.status).toBe('cancelled');
     expect(cancelled.refunded).toBe(b.paid);
     expect((await api.loyalty(token)).balance).toBe(before);
