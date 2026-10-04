@@ -190,6 +190,6 @@ function Row({ icon, title, value, sub }: { icon: React.ReactNode; title: string
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
-  hero: { width: '100%', height: 190, borderRadius: radius.lg, backgroundColor: colors.surface },
+  hero: { width: '100%', height: 190, borderRadius: radius.xl, backgroundColor: colors.soft },
   card: { gap: 10, padding: 16, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border },
 });

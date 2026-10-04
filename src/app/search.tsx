@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ChevronDown, MapPin, Search as SearchIcon, X } from 'lucide-react-native';
+import { CalendarDays, MapPin, Search as SearchIcon, X } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +16,7 @@ import { Stepper } from '@/ui/Stepper';
 import { Text } from '@/ui/Text';
 import { colors, fonts, radius } from '@/ui/theme';
 import { formatSlashDate } from '@/utils/date';
-import { useMoney } from '@/utils/money';
+import { formatNumber, useMoney } from '@/utils/money';
 
 const STEP = 50_000;
 
@@ -74,7 +74,7 @@ export default function SearchSheet() {
         <TextInput
           accessibilityLabel={label}
           keyboardType="number-pad"
-          defaultValue={String(Math.round(fromUZS(value)))}
+          defaultValue={formatNumber(fromUZS(value))}
           key={`${label}-${value}-${currency}`}
           onEndEditing={(e) => {
             const n = Number(e.nativeEvent.text.replace(/\D/g, ''));
@@ -103,12 +103,7 @@ export default function SearchSheet() {
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Text variant="h2">{t('search.headline')}</Text>
-        <Text variant="small" muted style={{ marginTop: 4 }}>
-          {t('search.sub')}
-        </Text>
-
-        <Text variant="title" style={styles.label}>
+        <Text variant="title" style={[styles.label, { marginTop: 4 }]}>
           {t('search.location')}
         </Text>
         <View style={styles.input}>
@@ -145,17 +140,19 @@ export default function SearchSheet() {
         <Text variant="title" style={styles.label}>
           {t('search.dates')}
         </Text>
-        <Pressable onPress={() => setCalendar(true)} style={styles.dates} accessibilityRole="button" accessibilityLabel={t('search.selectDates')}>
-          <View style={styles.dateHalf}>
-            <Text variant="body">{formatSlashDate(q.checkIn)}</Text>
-            <ChevronDown size={20} color={colors.ink} strokeWidth={1.5} />
-          </View>
-          <View style={styles.dateDivider} />
-          <View style={styles.dateHalf}>
-            <Text variant="body">{formatSlashDate(q.checkOut)}</Text>
-            <ChevronDown size={20} color={colors.ink} strokeWidth={1.5} />
-          </View>
-        </Pressable>
+        <View style={styles.twoCols}>
+          {([['checkIn', q.checkIn], ['checkOut', q.checkOut]] as const).map(([key, value]) => (
+            <Pressable key={key} onPress={() => setCalendar(true)} style={styles.datePill} accessibilityRole="button" accessibilityLabel={t(`search.${key}`)}>
+              <View>
+                <Text variant="caption" muted>
+                  {t(`search.${key}`)}
+                </Text>
+                <Text variant="body">{formatSlashDate(value)}</Text>
+              </View>
+              <CalendarDays size={18} color={colors.ink} strokeWidth={1.6} />
+            </Pressable>
+          ))}
+        </View>
 
         <View style={styles.twoCols}>
           <View style={{ flex: 1 }}>
@@ -170,15 +167,12 @@ export default function SearchSheet() {
             </Text>
             <Stepper label={t('search.children')} value={q.children} max={8} onChange={(children) => setQ({ ...q, children })} />
           </View>
-        </View>
-        <View style={styles.twoCols}>
           <View style={{ flex: 1 }}>
             <Text variant="title" style={styles.label}>
               {t('search.rooms')}
             </Text>
             <Stepper label={t('search.rooms')} value={q.rooms} min={1} max={Math.min(6, q.adults)} onChange={(rooms) => setQ({ ...q, rooms })} />
           </View>
-          <View style={{ flex: 1 }} />
         </View>
 
         <Text variant="title" style={[styles.label, { marginBottom: 12 }]}>
@@ -198,6 +192,9 @@ export default function SearchSheet() {
           {priceInput(high, (v) => setQ({ ...q, maxPrice: Math.min(max, Math.max(v, low + STEP)) }), t('search.maxPrice'))}
         </View>
 
+        <Text variant="title" style={styles.label}>
+          {t('search.type')}
+        </Text>
         <View style={styles.types}>
           <Chip label={t('search.allTypes')} active={q.types.length === 0} onPress={() => setQ({ ...q, types: [] })} />
           {PROPERTY_TYPES.map((type) => (
@@ -229,20 +226,18 @@ export default function SearchSheet() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
-  grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: colors.ink, marginTop: 8, opacity: Platform.OS === 'ios' ? 1 : 0 },
+  root: { flex: 1, backgroundColor: colors.card },
+  grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: colors.borderStrong, marginTop: 8, opacity: Platform.OS === 'ios' ? 1 : 0 },
   header: { alignItems: 'center', justifyContent: 'center', paddingVertical: 14 },
   close: { position: 'absolute', right: 20, top: 12 },
   content: { paddingHorizontal: 20, paddingBottom: 24, paddingTop: 8 },
   label: { marginTop: 20, marginBottom: 8 },
   input: { height: 46, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 8 },
-  textInput: { flex: 1, fontFamily: fonts.regular, fontSize: 15, color: colors.ink, paddingVertical: 0 },
+  textInput: { flex: 1, minWidth: 0, fontFamily: fonts.regular, fontSize: 15, color: colors.ink, paddingVertical: 0 },
   suggest: { marginTop: 6, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, paddingVertical: 4 },
   suggestRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 10 },
-  dates: { height: 50, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center' },
-  dateHalf: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
-  dateDivider: { width: 1, height: '100%', backgroundColor: colors.border },
-  twoCols: { flexDirection: 'row', gap: 10 },
-  types: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 22 },
-  footer: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 12, backgroundColor: colors.bg },
+  datePill: { flex: 1, height: 54, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
+  twoCols: { flexDirection: 'row', gap: 8 },
+  types: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  footer: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 12, backgroundColor: colors.card },
 });

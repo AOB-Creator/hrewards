@@ -1,40 +1,38 @@
 import { router, useFocusEffect } from 'expo-router';
-import { Bell, ChevronDown, ChevronRight, Search, SlidersHorizontal, Sparkles } from 'lucide-react-native';
+import { Bell, ChevronDown, ChevronRight, Gem, Search, SlidersHorizontal, Sparkles, Tag as TagIcon } from 'lucide-react-native';
 import { useCallback } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { DestinationCard } from '@/components/DestinationCard';
 import { HotelCard } from '@/components/HotelCard';
 import { api } from '@/data';
-import { DESTINATIONS } from '@/data/seed';
+import { PROMO_CODES } from '@/data/seed';
 import type { SearchQuery } from '@/domain/types';
 import { useAsync } from '@/hooks/useAsync';
-import { useNotifications, useNotificationsCount } from '@/hooks/useNotifications';
 import { useLoyalty } from '@/hooks/useLoyalty';
+import { useNotifications, useNotificationsCount } from '@/hooks/useNotifications';
 import { useT } from '@/i18n';
 import { useSearch } from '@/store/search';
 import { useSession } from '@/store/session';
 import { Chip } from '@/ui/Chip';
 import { IconButton } from '@/ui/IconButton';
+import { TAB_BAR_SPACE } from '@/ui/layout';
 import { SectionHeader } from '@/ui/misc';
 import { Text } from '@/ui/Text';
-import { colors, radius, tierColor } from '@/ui/theme';
-import { formatRange } from '@/utils/date';
+import { colors, radius } from '@/ui/theme';
+import { isWithin, today } from '@/utils/date';
 import { formatNumber } from '@/utils/money';
-import { TAB_BAR_SPACE } from './_layout';
 
 export default function HomeScreen() {
-  const { t, tl, locale } = useT();
+  const { t } = useT();
   const user = useSession((s) => s.user);
   const token = useSession((s) => s.token);
   const query = useSearch((s) => s.query);
   const setQuery = useSearch((s) => s.setQuery);
-  const recent = useSearch((s) => s.recent);
   const unread = useNotificationsCount();
   const loadNotifs = useNotifications((s) => s.load);
   const loyalty = useLoyalty();
 
-  const popular = useAsync(
+  const hotels = useAsync(
     () => api.search({ ...query, location: '', types: [], minPrice: undefined, maxPrice: undefined, sort: 'recommended' }, token),
     [query.checkIn, query.checkOut, query.adults, query.children, query.rooms, token],
   );
@@ -52,56 +50,68 @@ export default function HomeScreen() {
     router.push('/results');
   };
 
-  const tiles = recent.length
-    ? recent.map((r) => ({ key: r.destinationId, image: r.image, title: r.location, sub: formatRange(r.checkIn, r.checkOut, locale), loc: r.location }))
-    : DESTINATIONS.map((d) => ({ key: d.id, image: d.image, title: tl(d.name), sub: formatRange(query.checkIn, query.checkOut, locale), loc: tl(d.name) }));
+  const t0 = today();
+  const offers = PROMO_CODES.filter((p) => isWithin(t0, p.validFrom, p.validTo) && (p.maxUses == null || p.used < p.maxUses));
 
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
       <ScrollView
         contentContainerStyle={{ paddingBottom: TAB_BAR_SPACE }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={popular.loading && !!popular.data} onRefresh={popular.reload} />}
+        refreshControl={<RefreshControl refreshing={hotels.loading && !!hotels.data} onRefresh={hotels.reload} />}
       >
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
-            <Text variant="h2">{t('home.hey', { name: user?.firstName || t('home.traveler') })}</Text>
-            <Text variant="small" muted style={{ marginTop: 2 }}>
+            <Text variant="h1" style={{ fontSize: 26 }}>
+              {t('home.hey', { name: user?.firstName || t('home.traveler') })}
+            </Text>
+            <Text variant="small" muted style={{ marginTop: 4, fontSize: 14 }}>
               {t('home.subtitle')}
             </Text>
           </View>
-          <IconButton label={t('notifs.title')} badge={unread} onPress={() => router.navigate('/(tabs)/inbox')}>
+          <IconButton label={t('notifs.title')} size={48} floating onPress={() => router.push('/notifications')}>
             <Bell size={20} color={colors.ink} strokeWidth={1.6} />
+            {unread > 0 && <View style={styles.dot} />}
           </IconButton>
         </View>
 
         <Pressable accessibilityRole="search" onPress={() => router.push('/search')} style={styles.searchBar}>
-          <Search size={20} color={colors.ink} strokeWidth={1.7} />
+          <Search size={20} color={colors.ink} strokeWidth={1.6} />
           <Text variant="body" color={query.location ? colors.ink : colors.faint} style={{ flex: 1 }}>
-            {query.location || t('home.searchPlaceholder')}
+            {query.location || t('search.locationPlaceholder')}
           </Text>
-          <SlidersHorizontal size={20} color={colors.ink} strokeWidth={1.6} />
+          <View style={styles.filterBtn}>
+            <SlidersHorizontal size={18} color={colors.ink} strokeWidth={1.6} />
+          </View>
         </Pressable>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
           <Chip label={t('home.location')} active trailing={<ChevronDown size={16} color={colors.white} />} onPress={() => router.push('/search')} />
           <Chip label={t('home.price')} trailing={<ChevronDown size={16} color={colors.ink} />} onPress={() => openResults({ sort: 'price_asc' })} />
           <Chip label={t('home.rating')} trailing={<ChevronDown size={16} color={colors.ink} />} onPress={() => openResults({ sort: 'rating' })} />
-          <Chip label={t('home.reviews')} trailing={<ChevronDown size={16} color={colors.ink} />} onPress={() => openResults({ sort: 'reviews' })} />
         </ScrollView>
 
         {user && loyalty.data ? (
-          <Pressable onPress={() => router.push('/rewards')} style={styles.member}>
-            <View style={[styles.tierDot, { backgroundColor: tierColor(loyalty.data.status.tier.id) }]} />
-            <Text variant="label" style={{ flex: 1 }}>
-              {t('home.tierCard', { tier: t(`tier.${loyalty.data.status.tier.id}`), points: formatNumber(loyalty.data.balance) })}
-            </Text>
+          <Pressable onPress={() => router.navigate('/(tabs)/wallet')} style={styles.member}>
+            <View style={styles.memberIcon}>
+              <Gem size={20} color={colors.white} strokeWidth={1.6} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text variant="h3" color={colors.accent}>
+                {formatNumber(loyalty.data.balance)} {t('rewards.points')}
+              </Text>
+              <Text variant="small" muted>
+                {loyalty.data.status.next
+                  ? t('home.tierLine', { tier: t(`tier.${loyalty.data.status.tier.id}`), next: t(`tier.${loyalty.data.status.next.id}`), n: loyalty.data.status.nightsToNext })
+                  : t(`tier.${loyalty.data.status.tier.id}`)}
+              </Text>
+            </View>
             <ChevronRight size={18} color={colors.muted} />
           </Pressable>
         ) : !user ? (
-          <Pressable onPress={() => router.push('/auth/login')} style={styles.join}>
-            <View style={styles.joinIcon}>
-              <Sparkles size={18} color={colors.white} strokeWidth={1.7} />
+          <Pressable onPress={() => router.push('/auth/login')} style={styles.member}>
+            <View style={styles.memberIcon}>
+              <Sparkles size={20} color={colors.white} strokeWidth={1.6} />
             </View>
             <View style={{ flex: 1 }}>
               <Text variant="title">{t('home.joinTitle')}</Text>
@@ -114,24 +124,10 @@ export default function HomeScreen() {
         ) : null}
 
         <View style={styles.section}>
-          <SectionHeader title={recent.length ? t('home.recent') : t('home.destinations')} />
-        </View>
-        <FlatList
-          horizontal
-          data={tiles}
-          keyExtractor={(d) => d.key}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
-          renderItem={({ item }) => (
-            <DestinationCard image={item.image} title={item.title} subtitle={item.sub} badge={t('home.wantToVisit')} onPress={() => openResults({ location: item.loc, sort: 'recommended' })} />
-          )}
-        />
-
-        <View style={[styles.section, { marginTop: 24 }]}>
           <SectionHeader title={t('home.popular')} action={t('common.seeAll')} onAction={() => openResults({ location: '', sort: 'recommended' })} />
         </View>
-        {popular.loading && !popular.data ? (
-          <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 20 }}>
+        {hotels.loading && !hotels.data ? (
+          <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 20 }}>
             {[0, 1].map((i) => (
               <View key={i} style={styles.skeleton} />
             ))}
@@ -139,14 +135,34 @@ export default function HomeScreen() {
         ) : (
           <FlatList
             horizontal
-            data={popular.data ?? []}
+            data={hotels.data ?? []}
             keyExtractor={(r) => r.hotel.id}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
-            renderItem={({ item }) => (
-              <HotelCard hotel={item.hotel} price={item.fromPrice} freeCancellation={item.freeCancellationAvailable} breakfast={item.breakfastAvailable} />
-            )}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+            renderItem={({ item }) => <HotelCard hotel={item.hotel} price={item.fromPrice} />}
           />
+        )}
+
+        {offers.length > 0 && (
+          <View style={[styles.section, { gap: 10 }]}>
+            <SectionHeader title={t('home.offers')} />
+            {offers.map((p) => (
+              <Pressable key={p.code} onPress={() => openResults({ location: '', sort: 'recommended' })} style={styles.offer}>
+                <View style={styles.offerIcon}>
+                  <TagIcon size={22} color={colors.accent} strokeWidth={1.6} />
+                </View>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text variant="title">{t(`offer.${p.code}`)}</Text>
+                  <Text variant="small" muted>
+                    {t('home.offerCode', { code: p.code })}
+                  </Text>
+                  <Text variant="caption" color={colors.accent} weight="medium">
+                    {t('home.offerUntil', { date: p.validTo.split('-').reverse().join('.') })}
+                  </Text>
+                </View>
+              </Pressable>
+            ))}
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -155,23 +171,15 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, gap: 12 },
-  searchBar: {
-    marginHorizontal: 20,
-    marginTop: 18,
-    height: 52,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    gap: 10,
-  },
+  header: { flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: 20, paddingTop: 12, gap: 12 },
+  dot: { position: 'absolute', top: 12, right: 13, width: 9, height: 9, borderRadius: 5, backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.white },
+  searchBar: { marginHorizontal: 20, marginTop: 16, height: 52, borderRadius: radius.pill, backgroundColor: colors.card, flexDirection: 'row', alignItems: 'center', paddingLeft: 18, paddingRight: 6, gap: 10 },
+  filterBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center' },
   chips: { paddingHorizontal: 20, gap: 8, paddingTop: 16 },
+  member: { marginHorizontal: 20, marginTop: 16, padding: 14, borderRadius: radius.lg, backgroundColor: colors.card, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  memberIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   section: { paddingHorizontal: 20, marginTop: 22 },
-  member: { marginHorizontal: 20, marginTop: 16, height: 48, borderRadius: radius.pill, backgroundColor: colors.surface, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 10 },
-  tierDot: { width: 12, height: 12, borderRadius: 6 },
-  join: { marginHorizontal: 20, marginTop: 16, padding: 14, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  joinIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
-  skeleton: { width: 232, height: 290, borderRadius: radius.lg, backgroundColor: colors.surface },
+  skeleton: { width: 250, height: 260, borderRadius: radius.xl, backgroundColor: colors.card },
+  offer: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 8, borderRadius: radius.xl, backgroundColor: colors.card },
+  offerIcon: { width: 72, height: 72, borderRadius: 18, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
 });

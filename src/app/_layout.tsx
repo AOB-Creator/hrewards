@@ -1,4 +1,4 @@
-import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, useFonts } from '@expo-google-fonts/inter';
+import { Manrope_300Light, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, useFonts } from '@expo-google-fonts/manrope';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -30,7 +30,7 @@ function useHydrated() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold });
+  const [fontsLoaded, fontError] = useFonts({ Manrope_300Light, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold });
   const hydrated = useHydrated();
   const ready = (fontsLoaded || !!fontError) && hydrated;
 
@@ -58,7 +58,7 @@ export default function RootLayout() {
           <Stack.Screen name="booking/[id]" />
           <Stack.Screen name="auth/login" options={{ presentation: 'modal' }} />
           <Stack.Screen name="auth/otp" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="rewards" />
+          <Stack.Screen name="saved" />
           <Stack.Screen name="notifications" />
           <Stack.Screen name="settings" />
         </Stack>

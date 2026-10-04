@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Bath, BedDouble, Calendar, ChevronLeft, MapPin, Maximize, Phone, Share as ShareIcon, Sparkles, User } from 'lucide-react-native';
+import { Bath, BedDouble, Calendar, ChevronLeft, Coffee, Dumbbell, Gem, MapPin, Maximize, Phone, Share as ShareIcon, Sparkles, SquareParking, User, Waves, Wifi } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { FlatList, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,7 +8,10 @@ import { Gallery } from '@/components/Gallery';
 import { HeartButton } from '@/components/HeartButton';
 import { RoomOfferCard } from '@/components/RoomOfferCard';
 import { api } from '@/data';
+import { estimatePoints } from '@/domain/loyalty';
+import type { Amenity } from '@/domain/types';
 import { useAsync } from '@/hooks/useAsync';
+import { useLoyalty } from '@/hooks/useLoyalty';
 import { useT } from '@/i18n';
 import { useSearch } from '@/store/search';
 import { useSession } from '@/store/session';
@@ -21,6 +24,14 @@ import { Text } from '@/ui/Text';
 import { colors, radius } from '@/ui/theme';
 import { formatRange } from '@/utils/date';
 import { useMoney } from '@/utils/money';
+
+const KEY_AMENITIES: { id: Amenity; icon: typeof Wifi }[] = [
+  { id: 'wifi', icon: Wifi },
+  { id: 'breakfast', icon: Coffee },
+  { id: 'parking', icon: SquareParking },
+  { id: 'pool', icon: Waves },
+  { id: 'gym', icon: Dumbbell },
+];
 
 export default function HotelScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -43,7 +54,10 @@ export default function HotelScreen() {
     [id, query.checkIn, query.checkOut, query.adults, query.children, query.rooms, token],
   );
 
+  const loyalty = useLoyalty();
   const offer = useMemo(() => offers.data?.find((o) => o.rate.id === selected) ?? offers.data?.[0], [offers.data, selected]);
+
+  const earn = offer ? estimatePoints(offer.price.total, loyalty.data?.status.tier.id ?? 'silver', loyalty.data?.config) : 0;
 
   if (hotel.loading && !hotel.data) return <Loading />;
   if (!hotel.data) return <EmptyState title={t('common.error')} action={<Button title={t('common.back')} size="md" onPress={() => router.back()} />} />;
@@ -113,13 +127,38 @@ export default function HotelScreen() {
                 {i === thumbs.length - 1 && (
                   <View style={styles.more}>
                     <Text variant="body" color={colors.white}>
-                      {h.photoCount - thumbs.length} {t('common.more')}
+                      {t('hotel.morePhotos', { n: h.photoCount - thumbs.length })}
                     </Text>
                   </View>
                 )}
               </Pressable>
             ))}
           </View>
+
+          <View style={[styles.tagRow, { marginTop: 14 }]}>
+            {KEY_AMENITIES.filter((k) => h.amenities.includes(k.id)).map(({ id: a, icon: Icon }) => (
+              <View key={a} style={styles.amenity}>
+                <Icon size={15} color={colors.ink} strokeWidth={1.6} />
+                <Text variant="small">{t(`amenity.${a}`)}</Text>
+              </View>
+            ))}
+          </View>
+
+          <Text variant="body" style={{ marginTop: 14 }} numberOfLines={expanded ? undefined : 2}>
+            {tl(h.description)}
+          </Text>
+          <Pressable onPress={() => setExpanded(!expanded)} hitSlop={6}>
+            <Text variant="bodyMedium" weight="semibold">{expanded ? t('common.showLess') : t('common.readMore')}</Text>
+          </Pressable>
+
+          {earn > 0 && (
+            <Pressable disabled={!!token} onPress={() => router.push('/auth/login')} style={styles.earn}>
+              <Gem size={18} color={colors.accent} strokeWidth={1.6} />
+              <Text variant="label" color={colors.accentInk} style={{ flex: 1 }}>
+                {token ? t('hotel.earnHint', { n: earn }) : t('hotel.earnHintGuest', { n: earn })}
+              </Text>
+            </Pressable>
+          )}
 
           <Text variant="title" style={styles.h}>
             {t('hotel.details')}
@@ -130,12 +169,6 @@ export default function HotelScreen() {
             <Tag icon={<Bath size={13} color={colors.muted} />} label={t('hotel.bath', { n: h.details.baths })} />
             <Tag icon={<BedDouble size={13} color={colors.muted} />} label={t('hotel.beds', { n: h.details.beds })} />
           </View>
-          <Text variant="body" style={{ marginTop: 14 }} numberOfLines={expanded ? undefined : 2}>
-            {tl(h.description)}
-          </Text>
-          <Pressable onPress={() => setExpanded(!expanded)} hitSlop={6}>
-            <Text variant="bodyMedium">{expanded ? t('common.showLess') : t('common.readMore')}</Text>
-          </Pressable>
 
           <Text variant="title" style={styles.h}>
             {t('hotel.ratingReviews')}
@@ -293,25 +326,27 @@ function ReviewsList({ hotelId }: { hotelId: string }) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+  root: { flex: 1, backgroundColor: colors.card },
   heroBar: { position: 'absolute', left: 20, right: 20, flexDirection: 'row', justifyContent: 'space-between' },
   dots: { position: 'absolute', bottom: 40, alignSelf: 'center', flexDirection: 'row', gap: 4 },
   dot: { width: 6, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.5)' },
   dotActive: { width: 52, backgroundColor: colors.white },
-  sheet: { marginTop: -28, backgroundColor: colors.bg, borderTopLeftRadius: radius.xxl, borderTopRightRadius: radius.xxl, paddingHorizontal: 20, paddingTop: 24 },
+  sheet: { marginTop: -28, backgroundColor: colors.card, borderTopLeftRadius: radius.xxl, borderTopRightRadius: radius.xxl, paddingHorizontal: 20, paddingTop: 24 },
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   thumbs: { flexDirection: 'row', gap: 6, marginTop: 16 },
-  thumbWrap: { flex: 1, aspectRatio: 1, borderRadius: radius.sm, overflow: 'hidden', backgroundColor: colors.surface },
+  thumbWrap: { flex: 1, aspectRatio: 1, borderRadius: radius.sm, overflow: 'hidden', backgroundColor: colors.soft },
   thumb: { width: '100%', height: '100%' },
   more: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center' },
   h: { marginTop: 26, marginBottom: 12 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  datePill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 30, borderRadius: radius.pill, backgroundColor: colors.surface },
-  memberHint: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: radius.md, backgroundColor: colors.surface, marginBottom: 10 },
+  amenity: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border },
+  earn: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 16, backgroundColor: colors.accentSoft },
+  datePill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 30, borderRadius: radius.pill, backgroundColor: colors.soft },
+  memberHint: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: radius.md, backgroundColor: colors.soft, marginBottom: 10 },
   noRooms: { padding: 20, gap: 12, alignItems: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg },
   mapCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border },
   review: { width: 250, padding: 14, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border },
-  avatar: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center' },
   footer: {
     position: 'absolute',
     left: 0,
@@ -322,7 +357,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 20,
     paddingTop: 14,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.card,
     borderTopWidth: 1,
     borderColor: colors.border,
   },

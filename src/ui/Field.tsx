@@ -46,6 +46,6 @@ const styles = StyleSheet.create({
     gap: 10,
     backgroundColor: colors.white,
   },
-  filled: { backgroundColor: colors.surface, borderColor: colors.surface },
+  filled: { backgroundColor: colors.soft, borderColor: colors.soft },
   input: { flex: 1, fontFamily: fonts.regular, fontSize: 15, color: colors.ink, paddingVertical: 0 },
 });

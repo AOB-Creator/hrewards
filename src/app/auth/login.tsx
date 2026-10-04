@@ -73,7 +73,7 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+  root: { flex: 1, backgroundColor: colors.card },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12 },
   body: { flex: 1, paddingHorizontal: 20, paddingTop: 36, gap: 8 },
   footer: { paddingHorizontal: 20, paddingBottom: 12, gap: 6 },

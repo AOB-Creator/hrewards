@@ -135,14 +135,14 @@ export function defaultCheckout(checkIn: string) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+  root: { flex: 1, backgroundColor: colors.card },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18 },
   close: { position: 'absolute', right: 20, top: 16 },
   weekRow: { flexDirection: 'row', paddingHorizontal: 16, borderBottomWidth: 1, borderColor: colors.border, paddingBottom: 10 },
   weekCell: { flex: 1, textAlign: 'center' },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   cell: { width: `${100 / 7}%`, height: 46, alignItems: 'center', justifyContent: 'center' },
-  band: { position: 'absolute', top: 5, bottom: 5, left: 0, right: 0, backgroundColor: colors.surface },
+  band: { position: 'absolute', top: 5, bottom: 5, left: 0, right: 0, backgroundColor: colors.soft },
   day: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   daySel: { backgroundColor: colors.ink },
   footer: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 12, borderTopWidth: 1, borderColor: colors.border },

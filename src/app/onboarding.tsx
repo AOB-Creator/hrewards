@@ -82,7 +82,7 @@ export default function Onboarding() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+  root: { flex: 1, backgroundColor: colors.card },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   glow: { position: 'absolute', backgroundColor: '#F7F7F8', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 30, shadowOffset: { width: 0, height: 0 } },
   hero: { position: 'absolute' },

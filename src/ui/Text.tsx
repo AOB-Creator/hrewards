@@ -4,9 +4,9 @@ import { colors, fonts } from './theme';
 type Variant = 'display' | 'h1' | 'h2' | 'h3' | 'title' | 'body' | 'bodyMedium' | 'small' | 'caption' | 'label';
 
 const variants: Record<Variant, TextStyle> = {
-  display: { fontFamily: fonts.medium, fontSize: 36, lineHeight: 40, letterSpacing: -1.2 },
-  h1: { fontFamily: fonts.medium, fontSize: 26, lineHeight: 32, letterSpacing: -0.6 },
-  h2: { fontFamily: fonts.medium, fontSize: 20, lineHeight: 26, letterSpacing: -0.3 },
+  display: { fontFamily: fonts.light, fontSize: 34, lineHeight: 39, letterSpacing: -0.8 },
+  h1: { fontFamily: fonts.light, fontSize: 28, lineHeight: 34, letterSpacing: -0.5 },
+  h2: { fontFamily: fonts.regular, fontSize: 22, lineHeight: 28, letterSpacing: -0.4 },
   h3: { fontFamily: fonts.medium, fontSize: 17, lineHeight: 22, letterSpacing: -0.2 },
   title: { fontFamily: fonts.medium, fontSize: 15, lineHeight: 20 },
   body: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 21 },

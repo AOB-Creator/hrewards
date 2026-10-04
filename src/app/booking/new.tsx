@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { CheckCircle2, ChevronLeft, Clock, Download, Gift, Lock, Sparkles, Tag as TagIcon } from 'lucide-react-native';
+import { Check, ChevronLeft, Clock, Download, Gem, Lock, Sparkles, Tag as TagIcon } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,14 +20,14 @@ import { Button } from '@/ui/Button';
 import { Field } from '@/ui/Field';
 import { IconButton } from '@/ui/IconButton';
 import { Divider, Loading } from '@/ui/misc';
-import { Tag } from '@/ui/Tag';
 import { Text } from '@/ui/Text';
 import { colors, radius } from '@/ui/theme';
 import { addDays, formatLongDate } from '@/utils/date';
 import { formatNumber, useMoney } from '@/utils/money';
 
-const PROVIDERS: PaymentProvider[] = ['payme', 'click', 'uzum', 'uzcard', 'humo', 'visa_mc'];
-const PROVIDER_COLORS: Record<string, string> = { payme: '#33CCCC', click: '#0A6CFF', uzum: '#7B2BF9', uzcard: '#0D4C9B', humo: '#E7A321', visa_mc: '#1A1F71' };
+// Bank cards (Uzcard, Humo, Visa/Mastercard) go through one acquiring page.
+const PROVIDERS: PaymentProvider[] = ['payme', 'click', 'uzum', 'visa_mc'];
+const PROVIDER_COLORS: Record<string, string> = { payme: '#1C9C9C', click: '#0A5BD6', uzum: '#6A2BD9', visa_mc: '#111111' };
 
 export default function NewBooking() {
   const { hotelId, rateId } = useLocalSearchParams<{ hotelId: string; rateId: string }>();
@@ -197,7 +197,7 @@ export default function NewBooking() {
       <SafeAreaView style={[styles.root, { padding: 24 }]}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
           <View style={styles.successIcon}>
-            <CheckCircle2 size={40} color={colors.white} strokeWidth={1.6} />
+            <Check size={40} color={colors.white} strokeWidth={1.8} />
           </View>
           <Text variant="h1" center>
             {t('book.success')}
@@ -216,7 +216,14 @@ export default function NewBooking() {
               {h.name} · {formatLongDate(booking.checkIn, locale)} – {formatLongDate(booking.checkOut, locale)}
             </Text>
           </View>
-          {token && earn > 0 && <Tag tone="success" icon={<Sparkles size={12} color={colors.success} />} label={t('book.earn', { n: earn })} />}
+          {token && earn > 0 && (
+            <View style={styles.earnBanner}>
+              <Gem size={18} color={colors.accent} strokeWidth={1.6} />
+              <Text variant="label" color={colors.accentInk} style={{ flex: 1 }}>
+                {t('book.earnAfter', { n: earn })}
+              </Text>
+            </View>
+          )}
         </View>
         <View style={{ gap: 10, paddingBottom: insets.bottom }}>
           <Button title={t('book.voucher')} variant="secondary" icon={<Download size={18} color={colors.ink} />} onPress={() => shareVoucher(booking, h, room, locale, money).catch(() => Alert.alert(t('common.error')))} />
@@ -332,7 +339,7 @@ export default function NewBooking() {
               {token && cfg ? (
                 <View style={styles.points}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Gift size={18} color={colors.ink} strokeWidth={1.6} />
+                    <Gem size={18} color={colors.accent} strokeWidth={1.6} />
                     <Text variant="title">{t('book.usePoints')}</Text>
                   </View>
                   <Text variant="caption" muted>
@@ -496,26 +503,27 @@ const styles = StyleSheet.create({
   progress: { flexDirection: 'row', gap: 4, paddingHorizontal: 20 },
   progressSeg: { flex: 1, height: 3, borderRadius: 2, backgroundColor: colors.border },
   hold: { flexDirection: 'row', alignItems: 'center', gap: 6, marginHorizontal: 20, marginTop: 10, paddingHorizontal: 12, height: 30, borderRadius: radius.pill, backgroundColor: colors.surface, alignSelf: 'flex-start' },
-  stay: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border },
-  stayImg: { width: 76, height: 76, borderRadius: radius.sm, backgroundColor: colors.surface },
+  stay: { flexDirection: 'row', gap: 12, padding: 8, borderRadius: radius.lg, backgroundColor: colors.card },
+  stayImg: { width: 72, height: 72, borderRadius: 14, backgroundColor: colors.soft },
   policy: { gap: 4, padding: 14, borderRadius: radius.lg, backgroundColor: colors.surface },
-  perks: { gap: 4, padding: 14, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.gold },
+  perks: { gap: 4, padding: 14, borderRadius: radius.lg, backgroundColor: colors.accentSoft },
   promoApplied: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 14, borderRadius: radius.pill, backgroundColor: colors.successBg },
-  points: { gap: 4, padding: 14, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border },
+  points: { gap: 4, padding: 14, borderRadius: radius.lg, backgroundColor: colors.card },
   joinHint: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 14, borderRadius: radius.lg, backgroundColor: colors.surface },
-  option: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, minHeight: 54, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border },
+  option: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, minHeight: 54, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.card, backgroundColor: colors.card },
   optionOn: { borderColor: colors.ink, borderWidth: 1.5 },
   radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5, borderColor: colors.borderStrong, alignItems: 'center', justifyContent: 'center' },
   radioOn: { borderColor: colors.ink },
   radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.ink },
   providers: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  provider: { width: '48.5%', flexDirection: 'row', alignItems: 'center', gap: 8, height: 50, paddingHorizontal: 12, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border },
+  provider: { width: '48.5%', flexDirection: 'row', alignItems: 'center', gap: 8, height: 52, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1, borderColor: colors.card, backgroundColor: colors.card },
   providerOn: { borderColor: colors.ink, borderWidth: 1.5 },
+  earnBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, alignSelf: 'stretch', marginTop: 8, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 16, backgroundColor: colors.accentSoft },
   providerLogo: { width: 26, height: 26, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
   summary: { marginTop: 24, padding: 16, borderRadius: radius.lg, backgroundColor: colors.surface },
-  footer: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 14, borderTopWidth: 1, borderColor: colors.border, backgroundColor: colors.bg },
+  footer: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 14, borderTopWidth: 1, borderColor: colors.border, backgroundColor: colors.card },
   successIcon: { width: 76, height: 76, borderRadius: 38, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   numberBox: { alignItems: 'center', gap: 4, padding: 20, borderRadius: radius.lg, backgroundColor: colors.surface, alignSelf: 'stretch', marginTop: 12 },
   payOverlay: { flex: 1, backgroundColor: colors.scrim, alignItems: 'center', justifyContent: 'center' },
-  payCard: { backgroundColor: colors.bg, borderRadius: radius.xl, padding: 28, gap: 14, alignItems: 'center', minWidth: 240 },
+  payCard: { backgroundColor: colors.card, borderRadius: radius.xl, padding: 28, gap: 14, alignItems: 'center', minWidth: 240 },
 });

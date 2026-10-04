@@ -1,15 +1,10 @@
-import { getLocales } from 'expo-localization';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Currency, FxRates, Locale } from '@/domain/types';
 import { FALLBACK_RATES, fetchCbuRates } from '@/services/fx';
 import { persistStorage } from './storage';
 
-function deviceLocale(): Locale {
-  const code = getLocales()[0]?.languageCode;
-  return code === 'ru' || code === 'en' || code === 'uz' ? code : 'uz';
-}
-
+/** The app's working language is Uzbek; users can switch in Profile › Til. */
 interface SettingsState {
   locale: Locale;
   currency: Currency;
@@ -24,7 +19,7 @@ interface SettingsState {
 export const useSettings = create<SettingsState>()(
   persist(
     (set) => ({
-      locale: deviceLocale(),
+      locale: 'uz',
       currency: 'UZS',
       onboarded: false,
       fx: FALLBACK_RATES,

@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
 import { Luggage } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BookingCard } from '@/components/BookingCard';
 import { api } from '@/data';
@@ -10,13 +10,12 @@ import { useAsync } from '@/hooks/useAsync';
 import { useT } from '@/i18n';
 import { useSession } from '@/store/session';
 import { Button } from '@/ui/Button';
-import { Chip } from '@/ui/Chip';
 import { Field } from '@/ui/Field';
 import { EmptyState, Loading } from '@/ui/misc';
 import { Text } from '@/ui/Text';
 import { colors, radius } from '@/ui/theme';
 import { today } from '@/utils/date';
-import { TAB_BAR_SPACE } from './_layout';
+import { TAB_BAR_SPACE } from '@/ui/layout';
 
 type Filter = 'upcoming' | 'past' | 'cancelled';
 
@@ -63,11 +62,21 @@ export default function Trips() {
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
       <View style={styles.header}>
-        <Text variant="h1">{t('trips.title')}</Text>
+        <Text variant="h1">{t('tab.trips')}</Text>
       </View>
-      <View style={styles.chips}>
+      <View accessibilityRole="tablist" style={styles.segment}>
         {(['upcoming', 'past', 'cancelled'] as Filter[]).map((f) => (
-          <Chip key={f} label={t(`trips.${f}`)} active={filter === f} onPress={() => setFilter(f)} />
+          <Pressable
+            key={f}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: filter === f }}
+            onPress={() => setFilter(f)}
+            style={[styles.segItem, f === 'cancelled' && { flex: 1.3 }, filter === f && styles.segActive]}
+          >
+            <Text variant="label" color={filter === f ? colors.white : colors.ink}>
+              {t(`trips.${f}`)}
+            </Text>
+          </Pressable>
         ))}
       </View>
       {res.loading && !res.data ? (
@@ -102,6 +111,8 @@ export default function Trips() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   header: { paddingHorizontal: 20, paddingTop: 12 },
-  chips: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingTop: 14 },
-  find: { gap: 10, marginTop: 16, padding: 16, borderRadius: radius.lg, backgroundColor: colors.surface },
+  segment: { flexDirection: 'row', gap: 6, marginHorizontal: 20, marginTop: 16, padding: 4, borderRadius: radius.pill, backgroundColor: colors.card },
+  segItem: { flex: 1, height: 44, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+  segActive: { backgroundColor: colors.ink },
+  find: { gap: 10, marginTop: 16, padding: 16, borderRadius: radius.lg, borderWidth: 1, borderStyle: 'dashed', borderColor: '#C5C8CE' },
 });

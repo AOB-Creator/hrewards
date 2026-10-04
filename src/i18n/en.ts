@@ -28,7 +28,7 @@ export const en = {
   // onboarding
   'onb.kicker': 'No stress — just travel',
   'onb.title': 'Find the perfect place to relax for a couple of taps',
-  'onb.cta': "Let's escape",
+  'onb.cta': "Get started",
   'onb.signIn': 'I already have an account',
 
   // auth
@@ -64,7 +64,7 @@ export const en = {
   'home.recent': 'Recently explored',
   'home.destinations': 'Popular destinations',
   'home.wantToVisit': 'Want to visit',
-  'home.popular': 'Popular hotels',
+  'home.popular': "Our hotels",
   'home.cancellation': 'Free cancellation',
   'home.breakfast': 'Breakfast',
   'home.joinTitle': 'Join Escape Rewards',
@@ -75,7 +75,7 @@ export const en = {
   // tabs
   'tab.home': 'Home',
   'tab.saved': 'Saved',
-  'tab.trips': 'Trips',
+  'tab.trips': "Bookings",
   'tab.profile': 'Profile',
 
   // search sheet
@@ -211,7 +211,7 @@ export const en = {
   'provider.uzum': 'Uzum Bank',
   'provider.uzcard': 'Uzcard',
   'provider.humo': 'Humo',
-  'provider.visa_mc': 'Visa / Mastercard',
+  'provider.visa_mc': "Bank card",
   'provider.cash': 'At the hotel',
   'book.secure': 'You will be redirected to the secure payment page. We never store card details.',
   'book.promo': 'Promo code',
@@ -369,6 +369,25 @@ export const en = {
   'notif.confirmed.body': 'Your booking {0} is confirmed.',
   'notif.cancelled.title': 'Booking cancelled',
   'notif.cancelled.body': 'Booking {0} has been cancelled.',
+  'tab.wallet': "Points",
+  'home.offers': "Special offers",
+  'home.tierLine': "{tier} · {n} nights to {next}",
+  'home.offerCode': "Promo code: {code}",
+  'home.offerUntil': "Valid until {date}",
+  'search.type': "Accommodation type",
+  'hotel.morePhotos': "+{n} photos",
+  'hotel.earnHint': "+{n} points for this booking",
+  'hotel.earnHintGuest': "Sign in to earn +{n} points for this booking",
+  'offer.WELCOME10': "−10% on your first booking",
+  'offer.MARMARIS15': "−15% for 3+ nights at Marmaris",
+  'offer.LAVANDA200': "200 000 so'm off at Lavanda",
+  'offer.SUMMER25': "Summer sale −25%",
+  'rewards.how1Title': "Earn after your stay",
+  'rewards.how2Title': "Spend at any of our hotels",
+  'rewards.how3Title': "Validity",
+  'profile.tierBadge': "{tier} member · {n} pts",
+  'bk.payAtHotel': "Pay at hotel",
+  'book.earnAfter': "+{n} points will be credited after check-out",
 };
 
 export type TKey = keyof typeof en;

@@ -4,11 +4,12 @@ import { Text } from './Text';
 import { colors, radius } from './theme';
 
 /** Small pill used for "150 m²", "Cancellation", "Want to visit"… */
-export function Tag({ label, icon, tone = 'outline' }: { label: string; icon?: ReactNode; tone?: 'outline' | 'white' | 'success' | 'warning' | 'danger' | 'dark' | 'grey' }) {
+export function Tag({ label, icon, tone = 'outline' }: { label: string; icon?: ReactNode; tone?: 'outline' | 'white' | 'success' | 'warning' | 'danger' | 'dark' | 'grey' | 'accent' }) {
   const toneStyle = {
     outline: { backgroundColor: colors.white, borderColor: colors.border, color: colors.inkSoft },
     white: { backgroundColor: colors.white, borderColor: colors.white, color: colors.ink },
-    grey: { backgroundColor: colors.surface, borderColor: colors.surface, color: colors.inkSoft },
+    grey: { backgroundColor: colors.soft, borderColor: colors.soft, color: colors.inkSoft },
+    accent: { backgroundColor: colors.accentSoft, borderColor: colors.accentSoft, color: colors.accentInk },
     success: { backgroundColor: colors.successBg, borderColor: colors.successBg, color: colors.success },
     warning: { backgroundColor: colors.warningBg, borderColor: colors.warningBg, color: colors.warning },
     danger: { backgroundColor: colors.dangerBg, borderColor: colors.dangerBg, color: colors.danger },

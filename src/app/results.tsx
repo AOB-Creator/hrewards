@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   chips: { paddingHorizontal: 20, gap: 8, paddingVertical: 8, alignItems: 'center' },
   scrim: { flex: 1, backgroundColor: colors.scrim, justifyContent: 'flex-end' },
-  sheet: { backgroundColor: colors.bg, borderTopLeftRadius: radius.xxl, borderTopRightRadius: radius.xxl, padding: 20 },
+  sheet: { backgroundColor: colors.card, borderTopLeftRadius: radius.xxl, borderTopRightRadius: radius.xxl, padding: 20 },
   grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, marginBottom: 14 },
   sortRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderColor: colors.border },
 });

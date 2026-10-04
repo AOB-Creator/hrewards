@@ -163,7 +163,7 @@ export default function Otp() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+  root: { flex: 1, backgroundColor: colors.card },
   cells: { flexDirection: 'row', gap: 12, marginTop: 24 },
   cell: { width: 64, height: 68, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   cellActive: { borderColor: colors.ink, borderWidth: 1.5 },

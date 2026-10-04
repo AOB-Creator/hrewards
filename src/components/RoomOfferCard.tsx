@@ -84,7 +84,7 @@ export function RoomOfferCard({ offer, checkIn, selected, onSelect }: { offer: R
 const styles = StyleSheet.create({
   card: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: 12, gap: 10 },
   selected: { borderColor: colors.ink, borderWidth: 1.5 },
-  img: { width: 72, height: 72, borderRadius: radius.sm, backgroundColor: colors.surface },
+  img: { width: 72, height: 72, borderRadius: 14, backgroundColor: colors.soft },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'wrap' },
   radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: colors.borderStrong, alignItems: 'center', justifyContent: 'center' },
   radioOn: { backgroundColor: colors.ink, borderColor: colors.ink },

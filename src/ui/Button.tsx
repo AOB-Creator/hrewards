@@ -12,15 +12,16 @@ interface Props {
   disabled?: boolean;
   loading?: boolean;
   icon?: ReactNode;
+  textColor?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
-export function Button({ title, onPress, variant = 'primary', size = 'lg', disabled, loading, icon, style, testID }: Props) {
+export function Button({ title, onPress, variant = 'primary', size = 'lg', disabled, loading, icon, textColor, style, testID }: Props) {
   const h = size === 'lg' ? 56 : size === 'md' ? 46 : 36;
   const bg =
     variant === 'primary' ? colors.ink : variant === 'danger' ? colors.danger : variant === 'secondary' ? colors.white : 'transparent';
-  const fg = variant === 'primary' || variant === 'danger' ? colors.white : colors.ink;
+  const fg = textColor ?? (variant === 'primary' || variant === 'danger' ? colors.white : colors.ink);
   return (
     <Pressable
       testID={testID}
@@ -56,6 +57,6 @@ export function Button({ title, onPress, variant = 'primary', size = 'lg', disab
 
 const styles = StyleSheet.create({
   base: { borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-  outline: { borderWidth: 1, borderColor: colors.border },
+  outline: { borderWidth: 1, borderColor: colors.borderStrong },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 });

@@ -4,6 +4,8 @@ Mobile app for the Marmaris / Lavanda Marmaris Rakat hotel network, built from t
 technical specification (*TZ: Mehmonxonalar tarmog'i uchun onlayn bron va sodiqlik tizimi*)
 and the "Escape°" UI mockups.
 
+**Design:** grey background (#F2F3F5), white cards, near-black controls, lavender (#5B4BA6) for points only, Manrope, pill buttons, floating tab bar (Bosh sahifa · Bronlarim · Ballarim · Profil). Default language: Uzbek.
+
 **Stack:** Expo SDK 57 · React Native 0.86 · React 19 · TypeScript · Expo Router · Zustand.
 One codebase ships to the latest iOS and Android.
 
